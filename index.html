@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Duplicidad</title>
+  <style>
+    :root {
+      --paper: #f3f0ea;
+      --ink: #1c1b19;
+      --muted: #6e695f;
+      --line: #d8d2c8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    }
+
+    body {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 22px;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    header { border-bottom: 1px solid var(--line); }
+    footer { border-top: 1px solid var(--line); }
+
+    .count { font-variant-numeric: tabular-nums; }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #fff; }
+    button:disabled { opacity: 0.35; cursor: default; }
+    button:disabled:hover { background: transparent; }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 72px 1fr 72px;
+      align-items: center;
+      min-height: 0;
+    }
+
+    .gutter {
+      height: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 28px;
+      letter-spacing: 0;
+      text-transform: none;
+      padding: 0;
+    }
+
+    .gutter:hover:not(:disabled) { background: rgba(255, 255, 255, 0.45); }
+
+    .stage {
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 0 22px;
+    }
+
+    .stage img {
+      display: block;
+      max-width: min(920px, 100%);
+      max-height: calc(100vh - 148px);
+      height: auto;
+      width: auto;
+      background: #fff;
+      box-shadow: 0 18px 50px rgba(40, 32, 20, 0.12);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .hint { display: none; }
+
+    @media (max-width: 720px) {
+      header, footer { padding: 12px 14px; }
+      main { grid-template-columns: 44px 1fr 44px; }
+      .stage { padding: 10px 0 14px; }
+      .stage img { max-height: calc(100vh - 132px); box-shadow: 0 10px 28px rgba(40, 32, 20, 0.1); }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span>Duplicidad</span>
+    <span class="count" id="count">Tapa</span>
+  </header>
+  <main>
+    <button class="gutter" id="prev" type="button" aria-label="Página anterior">‹</button>
+    <div class="stage">
+      <img id="page" src="paginas/00-tapa.jpg" alt="Tapa de Duplicidad. Débora Furlan, Sofía Delucca e Iván Nevares." width="1344" height="1904">
+    </div>
+    <button class="gutter" id="next" type="button" aria-label="Página siguiente">›</button>
+  </main>
+  <footer>
+    <button id="prev2" type="button">Anterior</button>
+    <span class="hint">Flechas para pasar</span>
+    <button id="next2" type="button">Siguiente</button>
+  </footer>
+  <script>
+    const pages = [
+      { src: "paginas/00-tapa.jpg", label: "Tapa", alt: "Tapa de Duplicidad. Débora Furlan, Sofía Delucca e Iván Nevares.", w: 1344, h: 1904 },
+      { src: "paginas/00-apertura.jpg", label: "Apertura", alt: "Apertura. Texto sobre la identidad, con una cita de Alejandra Pizarnik.", w: 886, h: 1258 },
+      { src: "paginas/01.jpg", label: "1", alt: "Página 1. Retrato.", w: 885, h: 1258 },
+      { src: "paginas/02.jpg", label: "2", alt: "Página 2. Elías." },
+      { src: "paginas/03.jpg", label: "3", alt: "Página 3. Retrato." },
+      { src: "paginas/04.jpg", label: "4", alt: "Página 4. Texto de Elías." },
+      { src: "paginas/05.jpg", label: "5", alt: "Página 5. Retrato." },
+      { src: "paginas/06.jpg", label: "6", alt: "Página 6. Leah." },
+      { src: "paginas/07.jpg", label: "7", alt: "Página 7. Texto y fotografía." },
+      { src: "paginas/08.jpg", label: "8", alt: "Página 8. Retrato." },
+      { src: "paginas/09.jpg", label: "9", alt: "Página 9. Retrato." },
+      { src: "paginas/10.jpg", label: "10", alt: "Página 10. Tom." },
+      { src: "paginas/11.jpg", label: "11", alt: "Página 11. Retrato." },
+      { src: "paginas/12.jpg", label: "12", alt: "Página 12. Texto de Tom." },
+      { src: "paginas/13.jpg", label: "13", alt: "Página 13. Retrato." },
+      { src: "paginas/14.jpg", label: "14", alt: "Página 14. Milagros." },
+      { src: "paginas/15.jpg", label: "15", alt: "Página 15. Texto y fotografía." },
+      { src: "paginas/16.jpg", label: "16", alt: "Página 16. Retrato." }
+    ];
+
+    const img = document.getElementById("page");
+    const count = document.getElementById("count");
+    const prevButtons = [document.getElementById("prev"), document.getElementById("prev2")];
+    const nextButtons = [document.getElementById("next"), document.getElementById("next2")];
+
+    function indexFromHash() {
+      const n = Number(location.hash.replace("#", ""));
+      if (!Number.isInteger(n)) return 0;
+      return Math.min(pages.length - 1, Math.max(0, n));
+    }
+
+    let index = indexFromHash();
+
+    function render() {
+      const page = pages[index];
+      img.src = page.src;
+      img.alt = page.alt;
+      if (page.w) {
+        img.width = page.w;
+        img.height = page.h;
+      }
+      count.textContent = /^\d+$/.test(page.label) ? page.label + " / 16" : page.label;
+      document.title = "Duplicidad — " + page.label.toLowerCase();
+      const atStart = index === 0;
+      const atEnd = index === pages.length - 1;
+      prevButtons.forEach((b) => { b.disabled = atStart; });
+      nextButtons.forEach((b) => { b.disabled = atEnd; });
+      const next = pages[index + 1];
+      if (next) {
+        const preload = new Image();
+        preload.src = next.src;
+      }
+    }
+
+    function go(nextIndex) {
+      index = Math.min(pages.length - 1, Math.max(0, nextIndex));
+      history.replaceState(null, "", "#" + index);
+      render();
+    }
+
+    prevButtons.forEach((b) => b.addEventListener("click", () => go(index - 1)));
+    nextButtons.forEach((b) => b.addEventListener("click", () => go(index + 1)));
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        event.preventDefault();
+        go(index + 1);
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        event.preventDefault();
+        go(index - 1);
+      } else if (event.key === "Home") {
+        go(0);
+      } else if (event.key === "End") {
+        go(pages.length - 1);
+      }
+    });
+
+    let touchX = null;
+    document.addEventListener("touchstart", (event) => {
+      touchX = event.changedTouches[0].clientX;
+    }, { passive: true });
+    document.addEventListener("touchend", (event) => {
+      if (touchX == null) return;
+      const delta = event.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(delta) < 48) return;
+      go(index + (delta < 0 ? 1 : -1));
+    }, { passive: true });
+
+    window.addEventListener("hashchange", () => {
+      index = indexFromHash();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
